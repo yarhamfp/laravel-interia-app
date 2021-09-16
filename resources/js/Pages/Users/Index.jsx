@@ -5,16 +5,31 @@ import CreateUser from "../../Components/CreateUser";
 import useDialog from "../../Hooks/useDialog";
 import App from "../../Layouts/App";
 import EditUser from "../../Components/EditUser";
+import { Inertia } from "@inertiajs/inertia";
 
 export default function Index(props) {
     const { data: users, links, from } = props.users;
     const [state, setState] = useState([]);
     const [openModalAdd, closeTriggerModalAdd, addTrigger] = useDialog();
-    const [openModalEdit, closeTriggerModalEdit, editTrigger] = useDialog();
+    const [editDialogHandler, closeTriggerModalEdit, editTrigger] = useDialog();
+    const [destroyDiaglogHandler, closeTriggerModalDestroy, destroyTrigger] =
+        useDialog();
     const openDialogEdit = (user) => {
         setState(user);
-        openModalEdit();
+        editDialogHandler();
     };
+
+    const openDialogDestroy = (user) => {
+        setState(user);
+        destroyDiaglogHandler();
+    };
+
+    const destroyUser = () => {
+        Inertia.delete(route("users.destroy", state.id), {
+            onSuccess: () => closeTriggerModalDestroy(),
+        });
+    };
+
     return (
         <>
             <div className="container">
@@ -29,13 +44,32 @@ export default function Index(props) {
                     <EditUser model={state} close={closeTriggerModalEdit} />
                 </Dialog>
 
+                <Dialog
+                    trigger={destroyTrigger}
+                    title={`Delete User: ${state.name}`}
+                >
+                    <p>Are you sure ?</p>
+                    <button
+                        onClick={closeTriggerModalDestroy}
+                        className="btn btn-secondary me-3"
+                    >
+                        Cancel
+                    </button>
+                    <button onClick={destroyUser} className="btn btn-danger">
+                        Delete
+                    </button>
+                </Dialog>
+
                 <button onClick={openModalAdd} className="btn btn-primary">
                     Add
                 </button>
                 <div className="card mt-4">
                     <div className="card-header">Users Data</div>
                     <div className="card-body">
-                        <div className="table-responsive">
+                        <div
+                            className="table-responsive"
+                            style={{ minHeight: 250 }}
+                        >
                             <table className="table table-hover">
                                 <thead>
                                     <tr>
@@ -94,12 +128,16 @@ export default function Index(props) {
                                                             </button>
                                                         </li>
                                                         <li>
-                                                            <a
+                                                            <button
                                                                 className="dropdown-item"
-                                                                href="#"
+                                                                onClick={() =>
+                                                                    openDialogDestroy(
+                                                                        user
+                                                                    )
+                                                                }
                                                             >
                                                                 Delete
-                                                            </a>
+                                                            </button>
                                                         </li>
                                                         <li>
                                                             <a
